@@ -73,7 +73,7 @@
 # include "devices/src/femtomes.h"
 # include "devices/src/nmea.h"
 # include "devices/src/sbf.h"
-
+# include "devices/src/um982.h"
 #endif // CONSTRAINED_FLASH
 #include "devices/src/ubx.h"
 
@@ -95,7 +95,8 @@ enum class gps_driver_mode_t {
 	EMLIDREACH,
 	FEMTOMES,
 	NMEA,
-	SBF
+	SBF,
+	UNICORE
 };
 
 enum class gps_dump_comm_mode_t : int32_t {
@@ -355,6 +356,8 @@ GPS::GPS(const char *path, gps_driver_mode_t mode, GPSHelper::Interface interfac
 		case 6: _mode = gps_driver_mode_t::NMEA; break;
 
 		case 7: _mode = gps_driver_mode_t::SBF; break;
+
+		case 8: _mode = gps_driver_mode_t::UNICORE; break;
 #endif // CONSTRAINED_FLASH
 		}
 	}
@@ -911,6 +914,12 @@ GPS::run()
 			_helper = new GPSDriverSBF(&GPS::callback, this, &_report_gps_pos, _p_report_sat_info, heading_offset, pitch_offset);
 			set_device_type(DRV_GPS_DEVTYPE_SBF);
 			break;
+
+		case gps_driver_mode_t::UNICORE:
+			_helper = new GPSDriverUnicore(&GPS::callback, this, &_report_gps_pos, _p_report_sat_info, heading_offset);
+			set_device_type(DRV_GPS_DEVTYPE_UNICORE);
+			break;
+
 #endif // CONSTRAINED_FLASH
 
 		default:
@@ -1081,6 +1090,10 @@ GPS::run()
 				break;
 
 			case gps_driver_mode_t::FEMTOMES:
+				_mode = gps_driver_mode_t::UNICORE;
+				break;
+
+			case gps_driver_mode_t::UNICORE:
 				_mode = gps_driver_mode_t::SBF;
 				break;
 
@@ -1145,6 +1158,10 @@ GPS::print_status()
 
 	case gps_driver_mode_t::NMEA:
 		PX4_INFO("protocol: NMEA");
+		break;
+
+	case gps_driver_mode_t::UNICORE:
+		PX4_INFO("protocol: UNICORE");
 		break;
 
 	case gps_driver_mode_t::SBF:
@@ -1378,7 +1395,7 @@ $ gps reset warm
 
 	PRINT_MODULE_USAGE_PARAM_STRING('i', "uart", "spi|uart", "GPS interface", true);
 	PRINT_MODULE_USAGE_PARAM_STRING('j', "uart", "spi|uart", "secondary GPS interface", true);
-	PRINT_MODULE_USAGE_PARAM_STRING('p', nullptr, "ubx|mtk|ash|eml|fem|nmea", "GPS Protocol (default=auto select)", true);
+	PRINT_MODULE_USAGE_PARAM_STRING('p', nullptr, "ubx|mtk|ash|eml|fem|nmea|unicore", "GPS Protocol (default=auto select)", true);
 
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 	PRINT_MODULE_USAGE_COMMAND_DESCR("reset", "Reset GPS device");
@@ -1521,7 +1538,10 @@ GPS *GPS::instantiate(int argc, char *argv[], Instance instance)
 			} else if (!strcmp(myoptarg, "nmea")) {
 				mode = gps_driver_mode_t::NMEA;
 
-			} else if (!strcmp(myoptarg, "sbf")) {
+			} else if (!strcmp(myoptarg, "unicore")) {
+				mode = gps_driver_mode_t::UNICORE;
+
+			}else if (!strcmp(myoptarg, "sbf")) {
 				mode = gps_driver_mode_t::SBF;
 #endif // CONSTRAINED_FLASH
 			} else {

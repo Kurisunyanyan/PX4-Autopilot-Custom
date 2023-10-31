@@ -1089,8 +1089,16 @@ FixedwingPositionControl::control_auto_position(const float control_interval, co
 		}
 	}
 
-	float target_airspeed = adapt_airspeed_setpoint(control_interval, pos_sp_curr.cruising_speed,
+	float target_airspeed;
+
+	if (_control_mode.flag_control_offboard_enabled && PX4_ISFINITE(pos_sp_curr.vx) && PX4_ISFINITE(pos_sp_curr.vy)) {
+		matrix::Vector2f velocity_sp_2d(pos_sp_curr.vx, pos_sp_curr.vy);
+		target_airspeed = adapt_airspeed_setpoint(control_interval, velocity_sp_2d.length(),
 				_param_fw_airspd_min.get(), ground_speed);
+	}else{
+		target_airspeed = adapt_airspeed_setpoint(control_interval, pos_sp_curr.cruising_speed,
+				_param_fw_airspd_min.get(), ground_speed);
+	}
 
 	Vector2f curr_pos_local{_local_pos.x, _local_pos.y};
 	Vector2f curr_wp_local = _global_local_proj_ref.project(pos_sp_curr.lat, pos_sp_curr.lon);

@@ -129,6 +129,8 @@ else
 fi
 
 # Baro on I2C3
-ms5611 -X start
+# ms5611 -X start
+
+# gps start -d /dev/ttyS0 -p unicore
 
 unset HAVE_PM2

@@ -684,8 +684,10 @@ void AirspeedModule::select_airspeed_and_publish()
 		airspeed_validated.airspeed_sensor_measurement_valid = true;
 		break;
 	}
+    airspeed_validated.prev_airspeed_index = _prev_airspeed_index;
+    airspeed_validated.valid_airspeed_index = _valid_airspeed_index;
 
-	_airspeed_validated_pub.publish(airspeed_validated);
+    _airspeed_validated_pub.publish(airspeed_validated);
 
 	_wind_est_pub[0].publish(_wind_estimate_sideslip);
 
