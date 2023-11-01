@@ -17,7 +17,7 @@
 [submodule "src/drivers/gps/devices"]
 	path = src/drivers/gps/devices
 	url = https://github.com/Kurisunyanyan/PX4-GPSDrivers-C.git
-	branch = c/um982
+	branch = main
 [submodule "platforms/nuttx/NuttX/nuttx"]
 	path = platforms/nuttx/NuttX/nuttx
 	url = https://github.com/PX4/NuttX.git
